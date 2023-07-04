@@ -3,7 +3,6 @@ import os
 import sys
 import csv
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog, QTextEdit, QSizePolicy
-# import wx
 
 # clear previous console prints
 os.system('cls' if os.name == 'nt' else 'clear')
@@ -18,11 +17,8 @@ black_bar_scale = 1.4
 black_bar_opacity = .6
 zoom_factor_start = 2
 zoom_factor_end = 1
-csv_input = "dad-jokes.csv"
 
 # definitions
-# --------------------------------------
-# create folders from CSV-file
 def CreateDirectories(csv_file):
     with open(csv_file, "r") as file:
         csv_reader = csv.DictReader(file)
@@ -33,6 +29,7 @@ def CreateDirectories(csv_file):
             os.makedirs(setup.rstrip('?'), exist_ok=True)
             with open(setup.rstrip('?') + '/' + 'dad-joke.txt', 'w') as f:
                 f.write('"' + setup + '", "' + punchline + '"')
+    status_textedit.setPlainText("Created directories from " + csv_file)
 
 def SetupImage(image_filepath):
     global image
@@ -54,7 +51,7 @@ def SetupJoke(joke_filepath):
             setup = currentline[0].replace('"', '')
             punchline = currentline[1].replace('"', '')
     global text1, text2
-    text1 = (TextClip(txt=setup, # TODO: get text from .TXT
+    text1 = (TextClip(txt=setup,
                  size=(width, None),
                  fontsize=font_size,
                  color=font_color,
@@ -65,7 +62,7 @@ def SetupJoke(joke_filepath):
                  .set_start("0.0"))
 
     # setup punchline
-    text2 = (TextClip(txt=punchline, # TODO: get text from .TXT
+    text2 = (TextClip(txt=punchline,
                  size=(width, None),
                  fontsize=font_size,
                  color=font_color,
@@ -101,9 +98,9 @@ def ScanDirectoriesCreateVideo():
         image_filepath = "path"
         contains_video = False
         is_ready = False
+        created_video = False
         if os.path.isdir(dir) and dir != ".git":
             print("Found directory: ", dir)
-            video_name = dir
             for file in os.listdir("./" + dir):
                 print("\tFound file: \t", file)
                 file_extension = os.path.splitext(file)[1]
@@ -125,16 +122,15 @@ def ScanDirectoriesCreateVideo():
                 image = SetupImage(image_filepath)
                 text1, text2 = SetupJoke(joke_filepath)
                 CreateVideo(text1, text2, image, dir)
-
+                status_textedit.append("Created video: " + dir)
+                created_video = True
             else:
                 print("------> ", dir, " is __NOT__ ready for video!")
+    if created_video == False:
+        status_textedit.append("Found no directory ready for video...")
 
 
-
-# # test GUI
-# Subclass QMainWindow to customize your application's main window
-
-
+# GUI
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -175,6 +171,8 @@ class MainWindow(QMainWindow):
         self.status_textedit = QTextEdit()
         self.status_textedit.setReadOnly(True)
         layout.addWidget(self.status_textedit)
+        global status_textedit
+        status_textedit = self.status_textedit
 
         # Set size policy to expand horizontally and vertically
         self.status_textedit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -186,6 +184,7 @@ class MainWindow(QMainWindow):
         if file_dialog.exec() == QFileDialog.DialogCode.Accepted:
             selected_files = file_dialog.selectedFiles()
             if selected_files:
+                global csv_input
                 csv_input = selected_files[0]
                 self.status_textedit.setPlainText(f"Selected CSV file: {csv_input}")
 
@@ -194,16 +193,16 @@ class MainWindow(QMainWindow):
         CreateDirectories(csv_input)
 
     def create_videos(self):
-        ScanDirectoriesCreateVideo()
         self.status_textedit.setPlainText("Creating videos...")
+        ScanDirectoriesCreateVideo()
 
     def show_help(self):
         # Show help message or open help dialog here
-        self.status_textedit.setPlainText(
-            "Select CSV: Opens a file dialog to select CSV. The CSV must have two columns: setup and punchline.\n\n"
-            "Create directories: Creates directories based on 'setup' from selected CSV. Also creates a text-file in the directory.\n\n"
-            "Create videos: Checks all directories if they have a text file and an image (jpg), but no video (mp4). If so, generates videos and places them in the corresponding directory."
-        )
+        help_message = ("**Select CSV:** Opens a file dialog to select CSV. The CSV must have two columns: setup and punchline.\n\n"
+            "**Create directories:** Creates directories based on 'setup' from selected CSV. Also creates a text-file in the directory.\n\n"
+            "**Create videos:** Checks all directories if they have a text file and an image (jpg), but no video (mp4). If so, generates videos and places them in the corresponding directory.")
+
+        self.status_textedit.setMarkdown(help_message)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
