@@ -4,6 +4,16 @@
 
 This project is a video generation tool that creates short videos with dad jokes using a combination of images and text. It takes a directory containing a two-part dad joke, an image for the background, and generates a video with the setup and punchline displayed sequentially.
 
+## 🚀Vision
+The vision for this project is to fully automate the content creation for my Youtube channel with dad jokes: https://www.youtube.com/@DadJokeArchives
+
+## 🎯Goals
+- Reduce manual repetitive tasks
+  - Automate creation of directories ✅
+  - Automate generation of videos ✅
+- Automate creation of images, today generated with StableDiffusion ☑️
+- Automate upload to Youtube and apply music 🤔
+
 ## 💪Motivation
 
 The motivation behind this project is to provide an entertaining and engaging way to share dad jokes on social media platforms like YouTube and TikTok. Dad jokes are popular and often shared in text format, but creating video content adds an extra element of humor and engagement.
