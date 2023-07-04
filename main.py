@@ -1,8 +1,9 @@
 from moviepy.editor import CompositeVideoClip, ImageClip, TextClip, ColorClip
-# from moviepy.video.fx import resize
 import os
+import sys
 import csv
-import wx
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog, QTextEdit, QSizePolicy
+# import wx
 
 # clear previous console prints
 os.system('cls' if os.name == 'nt' else 'clear')
@@ -34,6 +35,7 @@ def CreateDirectories(csv_file):
                 f.write('"' + setup + '", "' + punchline + '"')
 
 def SetupImage(image_filepath):
+    global image
     image = (ImageClip(image_filepath)
          .set_duration(total_duration)
          .set_position("center"))
@@ -51,6 +53,7 @@ def SetupJoke(joke_filepath):
             currentline = line.split(",")
             setup = currentline[0].replace('"', '')
             punchline = currentline[1].replace('"', '')
+    global text1, text2
     text1 = (TextClip(txt=setup, # TODO: get text from .TXT
                  size=(width, None),
                  fontsize=font_size,
@@ -90,145 +93,120 @@ def CreateVideo(setup, punchline, image, directory):
     print(setup.txt)
     final_clip = final_clip.write_videofile(directory + "/" + directory + ".mp4", fps)
 
-def CheckVideoReadiness(dir):
-    for file in os.listdir("./" + dir):
-        print("\tFound file: \t", file)
-        file_extension = os.path.splitext(file)[1]
-        if file_extension == ".txt":
-            contains_joke = True
-        if file_extension == ".jpg":
-            contains_image = True
-        if file_extension == ".mp4":
-            contains_video = True               
-        print("\tContains joke: \t", contains_joke)
-        print("\tContains img: \t", contains_image)
-        print("\tContains vid: \t", contains_video)
-        if contains_joke == True and contains_image == True and contains_video == False:
-            is_ready = True
-        if is_ready == True:
-            print("------> ", dir, " is ready for video!")
-        else:
-            print("------> ", dir, " is __NOT__ ready for video!")
-        return is_ready
+def ScanDirectoriesCreateVideo():
+    for dir in os.listdir("."):
+        contains_joke = False
+        joke_filepath = "path"
+        contains_image = False
+        image_filepath = "path"
+        contains_video = False
+        is_ready = False
+        if os.path.isdir(dir) and dir != ".git":
+            print("Found directory: ", dir)
+            video_name = dir
+            for file in os.listdir("./" + dir):
+                print("\tFound file: \t", file)
+                file_extension = os.path.splitext(file)[1]
+                if file_extension == ".txt":
+                    contains_joke = True
+                    joke_filepath = dir + "/" + file
+                if file_extension == ".jpg":
+                    contains_image = True
+                    image_filepath = file
+                if file_extension == ".mp4":
+                    contains_video = True               
+            print("\tContains joke: \t", contains_joke)
+            print("\tContains img: \t", contains_image)
+            print("\tContains vid: \t", contains_video)
+            if contains_joke == True and contains_image == True and contains_video == False:
+                is_ready = True
+            if is_ready == True:
+                print("------> ", dir, " is ready for video!")
+                image = SetupImage(image_filepath)
+                text1, text2 = SetupJoke(joke_filepath)
+                CreateVideo(text1, text2, image, dir)
 
-# create dirs
-CreateDirectories(csv_input)
+            else:
+                print("------> ", dir, " is __NOT__ ready for video!")
 
-# find dirs ready for video
-for dir in os.listdir("."):
-    contains_joke = False
-    joke_filepath = "path"
-    contains_image = False
-    image_filepath = "path"
-    contains_video = False
-    is_ready = False
-    if os.path.isdir(dir) and dir != ".git":
-        print("Found directory: ", dir)
-        video_name = dir
-        for file in os.listdir("./" + dir):
-            print("\tFound file: \t", file)
-            file_extension = os.path.splitext(file)[1]
-            if file_extension == ".txt":
-                contains_joke = True
-                joke_filepath = dir + "/" + file
-            if file_extension == ".jpg":
-                contains_image = True
-                image_filepath = file
-            if file_extension == ".mp4":
-                contains_video = True               
-        print("\tContains joke: \t", contains_joke)
-        print("\tContains img: \t", contains_image)
-        print("\tContains vid: \t", contains_video)
-        if contains_joke == True and contains_image == True and contains_video == False:
-            is_ready = True
-        if is_ready == True:
-            print("------> ", dir, " is ready for video!")
-            image = SetupImage(image_filepath)
-            text1, text2 = SetupJoke(joke_filepath)
-            CreateVideo(text1, text2, image, dir)
 
-        else:
-            print("------> ", dir, " is __NOT__ ready for video!")
 
-# test GUI
-class MyFrame(wx.Frame):    
+# # test GUI
+# Subclass QMainWindow to customize your application's main window
+
+
+class MainWindow(QMainWindow):
     def __init__(self):
-        super().__init__(parent=None, title='Create Youtube shorts')
-        panel = wx.Panel(self)
-        my_sizer = wx.BoxSizer(wx.VERTICAL) 
-        # self.text_ctrl = wx.TextCtrl(panel, pos=(5, 5))
-        # my_sizer.Add(self.text_ctrl, 0, wx.ALL | wx.EXPAND, 5)
-        button_create_dirs = wx.Button(panel, label='Create directories', pos=(5, 55))
-        button_select_CSV = wx.Button(panel, label='Select CSV', pos=(5, 55))
-        button_create_dirs.Bind(wx.EVT_BUTTON, self.on_press)
-        my_sizer.Add(button_create_dirs, 0, wx.ALL | wx.CENTER, 10)        
-        my_sizer.Add(button_select_CSV, 0, wx.ALL | wx.CENTER, 5)        
-        panel.SetSizer(my_sizer)
+        super().__init__()
+        self.setWindowTitle("Create YouTube Shorts")
+        self.setGeometry(100, 100, 600, 240)  # Set window's default size
 
-        self.Show()
+        self.central_widget = QWidget(self)
+        self.setCentralWidget(self.central_widget)
 
-    def on_press(self, event):
-        value = self.text_ctrl.GetValue()
-        if not value:
-            print("You didn't enter anything!")
-        else:
-            print(f'You typed: "{value}"')
+        layout = QHBoxLayout(self.central_widget)
 
-if __name__ == '__main__':
-    app = wx.App()
-    frame = MyFrame()
-    app.MainLoop()
+        # Buttons container
+        button_layout = QVBoxLayout()
 
-# setup image
-image = (ImageClip("test2.jpg")
-         .set_duration(total_duration)
-         .set_position("center"))
-width = image.w
-height = image.h
+        # Select CSV button
+        self.select_csv_button = QPushButton("Select CSV")
+        self.select_csv_button.clicked.connect(self.select_csv)
+        button_layout.addWidget(self.select_csv_button)
 
-image = image.resize(lambda t: zoom_factor_start + (zoom_factor_end - zoom_factor_start) * t / image.duration)
+        # Create Directories button
+        self.create_directories_button = QPushButton("Create Directories")
+        self.create_directories_button.clicked.connect(self.create_directories)
+        button_layout.addWidget(self.create_directories_button)
 
-# setup dad joke
-text1 = (TextClip(txt="dad joke setup, but longer. Will this be wrapped?",
-                 size=(width, None),
-                 fontsize=font_size,
-                 color=font_color,
-                 method="caption",
-                 align="center")
-                 .set_position(("center", height_scale*image.h))
-                 .set_duration("5.0")
-                 .set_start("0.0"))
+        # Create Videos button
+        self.create_videos_button = QPushButton("Create Videos")
+        self.create_videos_button.clicked.connect(self.create_videos)
+        button_layout.addWidget(self.create_videos_button)
 
-# setup punchline
-text2 = (TextClip(txt="punchline - great! will this also be wrapped?",
-                 size=(width, None),
-                 fontsize=font_size,
-                 color=font_color,
-                 method="caption",
-                 align="center")
-                 .set_position(("center", height_scale*image.h))
-                 .set_duration("2.0")
-                 .set_start("5.0"))
+        # Help button
+        self.help_button = QPushButton("Help")
+        self.help_button.clicked.connect(self.show_help)
+        button_layout.addWidget(self.help_button)
 
-# setup text background
-# Calculate the maximum text height
-max_text_height = max(text1.h, text2.h)
-black_bar_y = height_scale*image.h - max_text_height*(black_bar_scale - 1)/2
+        layout.addLayout(button_layout)
 
-black_bar = (ColorClip(size=(image.w, int(black_bar_scale*max_text_height)),
-                      color=(0, 0, 0))
-                      .set_opacity(black_bar_opacity)
-                      .set_position(("center", black_bar_y))
-                      .set_duration(image.duration)
-                      .set_start("0.0"))
+        # TextEdit
+        self.status_textedit = QTextEdit()
+        self.status_textedit.setReadOnly(True)
+        layout.addWidget(self.status_textedit)
 
-# create final clip
-final_clip = CompositeVideoClip([image, black_bar, text1, text2],
-                                size=(width, height))
-# final_clip = final_clip.write_videofile("composite_clip.mp4", 12)
+        # Set size policy to expand horizontally and vertically
+        self.status_textedit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-def CreateTextClip(text, duration):
-    text_clip = TextClip(txt=text,
-                         size=(.8, 0),
-                         color="white").set_duration(duration).set_position(("center", .8), relative=True)
-    return text_clip
+    def select_csv(self):
+        file_dialog = QFileDialog()
+        file_dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        file_dialog.setNameFilter("CSV Files (*.csv)")
+        if file_dialog.exec() == QFileDialog.DialogCode.Accepted:
+            selected_files = file_dialog.selectedFiles()
+            if selected_files:
+                csv_input = selected_files[0]
+                self.status_textedit.setPlainText(f"Selected CSV file: {csv_input}")
+
+    def create_directories(self):
+        self.status_textedit.setPlainText(f"Creating directories from {csv_input}...")
+        CreateDirectories(csv_input)
+
+    def create_videos(self):
+        ScanDirectoriesCreateVideo()
+        self.status_textedit.setPlainText("Creating videos...")
+
+    def show_help(self):
+        # Show help message or open help dialog here
+        self.status_textedit.setPlainText(
+            "Select CSV: Opens a file dialog to select CSV. The CSV must have two columns: setup and punchline.\n\n"
+            "Create directories: Creates directories based on 'setup' from selected CSV. Also creates a text-file in the directory.\n\n"
+            "Create videos: Checks all directories if they have a text file and an image (jpg), but no video (mp4). If so, generates videos and places them in the corresponding directory."
+        )
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
