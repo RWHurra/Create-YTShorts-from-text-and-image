@@ -31,7 +31,7 @@ This project solves the problem of creating visually appealing videos for dad jo
 6. Run the program again to generate videos for the jokes that meet the necessary requirements.
 7. The output videos will be saved in the respective joke directories.
 
-## 🧑‍🎓Lessons Learned
+## 🎓Lessons Learned
 
 During the development of this project, several valuable lessons were learned, including:
 
