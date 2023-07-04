@@ -49,8 +49,8 @@ def SetupJoke(joke_filepath):
     with open(joke_filepath, "r") as filestream:
         for line in filestream:
             currentline = line.split(",")
-            setup = currentline[0]
-            punchline = currentline[1]
+            setup = currentline[0].replace('"', '')
+            punchline = currentline[1].replace('"', '')
     text1 = (TextClip(txt=setup, # TODO: get text from .TXT
                  size=(width, None),
                  fontsize=font_size,
@@ -130,7 +130,7 @@ for dir in os.listdir("."):
             file_extension = os.path.splitext(file)[1]
             if file_extension == ".txt":
                 contains_joke = True
-                joke_filepath = file
+                joke_filepath = dir + "/" + file
             if file_extension == ".jpg":
                 contains_image = True
                 image_filepath = file
