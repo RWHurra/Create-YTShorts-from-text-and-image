@@ -4,6 +4,9 @@ import os
 import csv
 import wx
 
+# clear previous console prints
+os.system('cls' if os.name == 'nt' else 'clear')
+
 # setup variables
 fps = 12
 total_duration = 7.0
@@ -27,6 +30,8 @@ def CreateDirectories(csv_file):
             setup = row["Setup"]
             punchline = row["Punchline"]
             os.makedirs(setup.rstrip('?'), exist_ok=True)
+            with open(setup.rstrip('?') + '/' + 'dad-joke.txt', 'w') as f:
+                f.write('"' + setup + '", "' + punchline + '"')
 
 def SetupImage(image_filepath):
     image = (ImageClip(image_filepath)
@@ -41,7 +46,12 @@ def SetupImage(image_filepath):
 
 def SetupJoke(joke_filepath):
     # setup joke
-    text1 = (TextClip(txt="dad joke setup, but longer. Will this be wrapped?", # TODO: get text from .TXT
+    with open(joke_filepath, "r") as filestream:
+        for line in filestream:
+            currentline = line.split(",")
+            setup = currentline[0]
+            punchline = currentline[1]
+    text1 = (TextClip(txt=setup, # TODO: get text from .TXT
                  size=(width, None),
                  fontsize=font_size,
                  color=font_color,
@@ -52,7 +62,7 @@ def SetupJoke(joke_filepath):
                  .set_start("0.0"))
 
     # setup punchline
-    text2 = (TextClip(txt="punchline - great! will this also be wrapped?", # TODO: get text from .TXT
+    text2 = (TextClip(txt=punchline, # TODO: get text from .TXT
                  size=(width, None),
                  fontsize=font_size,
                  color=font_color,
