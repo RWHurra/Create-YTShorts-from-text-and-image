@@ -1,13 +1,27 @@
-from moviepy.editor import CompositeVideoClip, ImageClip, TextClip, ColorClip
+from moviepy.editor import (CompositeVideoClip,
+                            ImageClip,
+                            TextClip,
+                            ColorClip)
 import os
 import sys
 import csv
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QFileDialog, QTextEdit, QSizePolicy
+from PyQt6.QtWidgets import (QApplication,
+                             QMainWindow,
+                             QWidget,
+                             QVBoxLayout,
+                             QHBoxLayout,
+                             QPushButton,
+                             QFileDialog,
+                             QTextEdit,
+                             QSizePolicy,
+                             QLabel,
+                             QLineEdit)
 
 # clear previous console prints
 os.system('cls' if os.name == 'nt' else 'clear')
 
 # setup variables
+# default settings
 fps = 12
 total_duration = 7.0
 font_size = 24
@@ -19,7 +33,7 @@ zoom_factor_start = 2
 zoom_factor_end = 1
 
 # definitions
-def CreateDirectories(csv_file):
+def create_directories(csv_file):
     with open(csv_file, "r") as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
@@ -31,7 +45,7 @@ def CreateDirectories(csv_file):
                 f.write('"' + setup + '", "' + punchline + '"')
     status_textedit.setPlainText("Created directories from " + csv_file)
 
-def SetupImage(image_filepath):
+def setup_image(image_filepath):
     global image
     image = (ImageClip(image_filepath)
          .set_duration(total_duration)
@@ -43,7 +57,7 @@ def SetupImage(image_filepath):
     return image
     print("Image setup!")
 
-def SetupJoke(joke_filepath):
+def setup_joke(joke_filepath):
     # setup joke
     with open(joke_filepath, "r") as filestream:
         for line in filestream:
@@ -73,7 +87,7 @@ def SetupJoke(joke_filepath):
                  .set_start("5.0"))
     return text1, text2
 
-def CreateVideo(setup, punchline, image, directory):
+def create_video(setup, punchline, image, directory):
     max_text_height = max(setup.h, punchline.h)
     black_bar_y = height_scale*image.h - max_text_height*(black_bar_scale - 1)/2
 
@@ -90,7 +104,7 @@ def CreateVideo(setup, punchline, image, directory):
     print(setup.txt)
     final_clip = final_clip.write_videofile(directory + "/" + directory + ".mp4", fps)
 
-def ScanDirectoriesCreateVideo():
+def scan_directories_and_create_video():
     for dir in os.listdir("."):
         contains_joke = False
         joke_filepath = "path"
@@ -119,9 +133,9 @@ def ScanDirectoriesCreateVideo():
                 is_ready = True
             if is_ready == True:
                 print("------> ", dir, " is ready for video!")
-                image = SetupImage(image_filepath)
-                text1, text2 = SetupJoke(joke_filepath)
-                CreateVideo(text1, text2, image, dir)
+                image = setup_image(image_filepath)
+                text1, text2 = setup_joke(joke_filepath)
+                create_video(text1, text2, image, dir)
                 status_textedit.append("Created video: " + dir)
                 created_video = True
             else:
@@ -134,6 +148,7 @@ def ScanDirectoriesCreateVideo():
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.settings_window = None  # Initialize the settings window instance variable
         self.setWindowTitle("Create YouTube Shorts")
         self.setGeometry(100, 100, 600, 240)  # Set window's default size
 
@@ -159,6 +174,11 @@ class MainWindow(QMainWindow):
         self.create_videos_button = QPushButton("Create Videos")
         self.create_videos_button.clicked.connect(self.create_videos)
         button_layout.addWidget(self.create_videos_button)
+
+        # Create Settings button
+        self.settings_button = QPushButton("Settings")
+        self.settings_button.clicked.connect(self.settings)
+        button_layout.addWidget(self.settings_button)
 
         # Help button
         self.help_button = QPushButton("Help")
@@ -190,19 +210,74 @@ class MainWindow(QMainWindow):
 
     def create_directories(self):
         self.status_textedit.setPlainText(f"Creating directories from {csv_input}...")
-        CreateDirectories(csv_input)
+        create_directories(csv_input)
 
     def create_videos(self):
         self.status_textedit.setPlainText("Creating videos...")
-        ScanDirectoriesCreateVideo()
+        settings = self.settings_window.get_settings()
+        # Assign the values from settings to the variables
+        global fps, total_duration, font_size, font_color, height_scale, black_bar_scale, black_bar_opacity, zoom_factor_start, zoom_factor_end
+        fps = int(settings["fps"])
+        total_duration = float(settings["total_duration"])
+        font_size = int(settings["font_size"])
+        font_color = settings["font_color"]
+        height_scale = float(settings["height_scale"])
+        black_bar_scale = float(settings["black_bar_scale"])
+        black_bar_opacity = float(settings["black_bar_opacity"])
+        zoom_factor_start = float(settings["zoom_factor_start"])
+        zoom_factor_end = float(settings["zoom_factor_end"])
+        scan_directories_and_create_video()
+
+    def settings(self):
+        self.status_textedit.setPlainText("Settings...")
+        if self.settings_window is None:
+            self.settings_window = Settings()  # Create the settings window instance
+        self.settings_window.show()
 
     def show_help(self):
         # Show help message or open help dialog here
         help_message = ("**Select CSV:** Opens a file dialog to select CSV. The CSV must have two columns: setup and punchline.\n\n"
             "**Create directories:** Creates directories based on 'setup' from selected CSV. Also creates a text-file in the directory.\n\n"
-            "**Create videos:** Checks all directories if they have a text file and an image (jpg), but no video (mp4). If so, generates videos and places them in the corresponding directory.")
+            "**Create videos:** Checks all directories if they have a text file and an image (jpg), but no video (mp4). If so, generates videos and places them in the corresponding directory.\n\n"
+            "**Settings:** Change various settings. Opens in a new window, close the window to save values.")
 
         self.status_textedit.setMarkdown(help_message)
+
+# Settings window
+class Settings(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Settings")
+        
+        # Create the central widget
+        self.central_widget = QWidget(self)
+        self.setCentralWidget(self.central_widget)
+        
+        # Create the layout
+        layout = QVBoxLayout(self.central_widget)
+        
+        # Create labels and line edits for each setting
+        labels = ["fps", "total_duration", "font_size", "font_color", "height_scale",
+                  "black_bar_scale", "black_bar_opacity", "zoom_factor_start", "zoom_factor_end"]
+        default_values = [12, 7.0, 24, "white", 0.1, 1.4, 0.6, 2, 1]
+        self.line_edits = {}
+        for label, default_value in zip(labels, default_values):
+            # Create the label
+            label_widget = QLabel(label)
+            layout.addWidget(label_widget)
+            
+            # Create the line edit and set the default value
+            line_edit = QLineEdit(str(default_value))
+            self.line_edits[label] = line_edit
+            layout.addWidget(line_edit)
+        
+    def get_settings(self):
+        # Retrieve the values from the line edits and return as a dictionary
+        settings = {}
+        for label, line_edit in self.line_edits.items():
+            settings[label] = line_edit.text()
+        return settings
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
