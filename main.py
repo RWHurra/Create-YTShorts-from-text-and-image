@@ -31,6 +31,7 @@ black_bar_scale = 1.4
 black_bar_opacity = .6
 zoom_factor_start = 2
 zoom_factor_end = 1
+csv_input = "example.csv"
 
 # definitions
 def create_directories(csv_file):
@@ -105,6 +106,9 @@ def create_video(setup, punchline, image, directory):
     final_clip = final_clip.write_videofile(directory + "/" + directory + ".mp4", fps)
 
 def scan_directories_and_create_video():
+    created_video = False
+    count_missing_image = 0
+    string_missing_image = ""
     for dir in os.listdir("."):
         contains_joke = False
         joke_filepath = "path"
@@ -112,7 +116,6 @@ def scan_directories_and_create_video():
         image_filepath = "path"
         contains_video = False
         is_ready = False
-        created_video = False
         if os.path.isdir(dir) and dir != ".git":
             print("Found directory: ", dir)
             for file in os.listdir("./" + dir):
@@ -129,6 +132,9 @@ def scan_directories_and_create_video():
             print("\tContains joke: \t", contains_joke)
             print("\tContains img: \t", contains_image)
             print("\tContains vid: \t", contains_video)
+            if contains_image == False:
+                count_missing_image += 1
+                string_missing_image += dir + "\n"
             if contains_joke == True and contains_image == True and contains_video == False:
                 is_ready = True
             if is_ready == True:
@@ -142,6 +148,8 @@ def scan_directories_and_create_video():
                 print("------> ", dir, " is __NOT__ ready for video!")
     if created_video == False:
         status_textedit.append("Found no directory ready for video...")
+        status_textedit.append(str(count_missing_image) + " directories have missing images:")
+        status_textedit.append(string_missing_image)
 
 
 # GUI
@@ -161,27 +169,27 @@ class MainWindow(QMainWindow):
         button_layout = QVBoxLayout()
 
         # Select CSV button
-        self.select_csv_button = QPushButton("Select CSV")
+        self.select_csv_button = QPushButton("✅ Select CSV")
         self.select_csv_button.clicked.connect(self.select_csv)
         button_layout.addWidget(self.select_csv_button)
 
         # Create Directories button
-        self.create_directories_button = QPushButton("Create Directories")
+        self.create_directories_button = QPushButton("📁 Create Directories")
         self.create_directories_button.clicked.connect(self.create_directories)
         button_layout.addWidget(self.create_directories_button)
 
         # Create Videos button
-        self.create_videos_button = QPushButton("Create Videos")
+        self.create_videos_button = QPushButton("▶️ Create Videos")
         self.create_videos_button.clicked.connect(self.create_videos)
         button_layout.addWidget(self.create_videos_button)
 
         # Create Settings button
-        self.settings_button = QPushButton("Settings")
+        self.settings_button = QPushButton("⚙️ Settings")
         self.settings_button.clicked.connect(self.settings)
         button_layout.addWidget(self.settings_button)
 
         # Help button
-        self.help_button = QPushButton("Help")
+        self.help_button = QPushButton("❓ Help")
         self.help_button.clicked.connect(self.show_help)
         button_layout.addWidget(self.help_button)
 
@@ -214,32 +222,34 @@ class MainWindow(QMainWindow):
 
     def create_videos(self):
         self.status_textedit.setPlainText("Creating videos...")
-        settings = self.settings_window.get_settings()
         # Assign the values from settings to the variables
-        global fps, total_duration, font_size, font_color, height_scale, black_bar_scale, black_bar_opacity, zoom_factor_start, zoom_factor_end
-        fps = int(settings["fps"])
-        total_duration = float(settings["total_duration"])
-        font_size = int(settings["font_size"])
-        font_color = settings["font_color"]
-        height_scale = float(settings["height_scale"])
-        black_bar_scale = float(settings["black_bar_scale"])
-        black_bar_opacity = float(settings["black_bar_opacity"])
-        zoom_factor_start = float(settings["zoom_factor_start"])
-        zoom_factor_end = float(settings["zoom_factor_end"])
+        if self.settings_window != None:
+            settings = self.settings_window.get_settings()
+            global fps, total_duration, font_size, font_color, height_scale, black_bar_scale, black_bar_opacity, zoom_factor_start, zoom_factor_end
+            fps = int(settings["fps"])
+            total_duration = float(settings["total_duration"])
+            font_size = int(settings["font_size"])
+            font_color = settings["font_color"]
+            height_scale = float(settings["height_scale"])
+            black_bar_scale = float(settings["black_bar_scale"])
+            black_bar_opacity = float(settings["black_bar_opacity"])
+            zoom_factor_start = float(settings["zoom_factor_start"])
+            zoom_factor_end = float(settings["zoom_factor_end"])
         scan_directories_and_create_video()
 
     def settings(self):
-        self.status_textedit.setPlainText("Settings...")
+        self.status_textedit.setPlainText("Opening settings window...")
         if self.settings_window is None:
             self.settings_window = Settings()  # Create the settings window instance
         self.settings_window.show()
 
     def show_help(self):
         # Show help message or open help dialog here
-        help_message = ("**Select CSV:** Opens a file dialog to select CSV. The CSV must have two columns: setup and punchline.\n\n"
-            "**Create directories:** Creates directories based on 'setup' from selected CSV. Also creates a text-file in the directory.\n\n"
-            "**Create videos:** Checks all directories if they have a text file and an image (jpg), but no video (mp4). If so, generates videos and places them in the corresponding directory.\n\n"
-            "**Settings:** Change various settings. Opens in a new window, close the window to save values.")
+        help_message = ("**✅ Select CSV:** Opens a file dialog to select CSV. The CSV must have two columns: setup and punchline. Default CSV is example.csv.\n\n"
+            "**📁 Create directories:** Creates directories based on 'setup' from selected CSV. Also creates a text-file in the directory.\n\n"
+            "**▶️ Create videos:** Checks all directories if they have a text file and an image (jpg), but no video (mp4). If so, generates videos and places them in the corresponding directory.\n\n"
+            "**⚙️ Settings:** Change various settings. Opens in a new window, close the window to save values.\n\n"
+            "**❓ Help:** ☝️")
 
         self.status_textedit.setMarkdown(help_message)
 
