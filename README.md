@@ -1,4 +1,4 @@
-# Create Youtube Shorts from text and image
+# Create Youtube Shorts from text and image 📄+🖼️=▶️
 
 ## 📖Description
 
@@ -29,16 +29,19 @@ This project solves the problem of creating visually appealing videos for dad jo
 - Generates text clips for the joke setup and punchline, including formatting options.
 - Adds a black bar as a text background for better visibility.
 - Combines all the elements into a final video clip.
-- Provides a user-friendly GUI for directory creation. (Work in progress)
+- Provides a user-friendly GUI for directory creation.
 
 ## 💻Usage
 
 1. Ensure you have the necessary dependencies installed.
-2. Prepare a CSV file with two columns: "Setup" and "Punchline," containing the respective parts of the dad jokes.
-3. Place the background image in the same directory as the CSV file.
-4. Run the program and select the CSV file to create directories for each joke.
-5. Ensure that each joke directory contains a text file with the setup and punchline.
-6. Run the program again to generate videos for the jokes that meet the necessary requirements.
+2. Prepare a CSV file with two columns: "Setup" and "Punchline," containing the respective parts of the dad jokes. Example CSV included and default CSV.
+3. Create directories for each joke.
+4. Ensure that each joke directory contains a text file with the setup and punchline (auto-generated from CSV).
+5. Add a background image in each folder (jpg).
+6. Generate videos for the jokes that meet the necessary requirements
+   - Must have txt
+   - Must have jpg
+   - Must NOT have mp4
 7. The output videos will be saved in the respective joke directories.
 
 ## 🎓Lessons Learned
@@ -48,14 +51,14 @@ During the development of this project, several valuable lessons were learned, i
 - Working with movie clips and manipulating video elements using the moviepy library.
 - Reading data from CSV files and using it to automate directory creation and text generation.
 - Applying formatting options to text clips, such as size, font color, and alignment.
-- Using the wxPython library to create a simple graphical user interface for enhanced usability.
+- Using the PyQT library to create a simple graphical user interface for enhanced usability.
 
 ## 👉Standout Features
 
 - Automated directory creation based on CSV file input, reducing manual effort and ensuring consistency.
 - Text clip setup with customization options for size, color, and alignment.
 - Black bar background for improved text visibility.
-- User-friendly GUI for easy execution and interaction with the program. (Work in progress)
+- User-friendly GUI for easy execution and interaction with the program.
 
 ## Conclusion
 
