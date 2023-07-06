@@ -1,0 +1,15 @@
+# DEFAULT SETTINGS
+
+DEFAULT_CSV = 'example.csv'
+
+SETTINGS = dict(
+    FPS = 12,
+    TOTAL_DURATION = 7.0,
+    ZOOM_FACTOR_START = 2,
+    ZOOM_FACTOR_END = 1,
+    FONT_SIZE = 24,
+    FONT_COLOR = "white",
+    HEIGHT_SCALE = .1,
+    BLACK_BAR_SCALE = 1.4,
+    BLACK_BAR_OPACITY = .6,
+)
